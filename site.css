@@ -1,0 +1,290 @@
+/* ============================================================
+   bhyon's memorys — public vault
+   ============================================================ */
+
+.wrap{
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem 6rem;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.6rem 0 0.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.brand{
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+}
+.brand a{ text-decoration: none; }
+
+/* ---------- hero ---------- */
+.hero{
+  padding: 3.2rem 0 2.6rem;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 2.5rem;
+  align-items: end;
+}
+.hero h1{
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.hero p.lede{
+  margin-top: 0.9rem;
+  color: var(--ink-dim);
+  font-size: 1.05rem;
+  max-width: 46ch;
+}
+
+/* birthday counter card */
+.countdown{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 1.5rem 1.6rem;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+.countdown::after{
+  content: "";
+  position: absolute;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,181,77,0.35), transparent 70%);
+  right: -50px; top: -50px;
+}
+.countdown-label{
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+}
+.countdown-value{
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-top: 0.15em;
+  line-height: 1.2;
+}
+.countdown-value span{ font-size: 1rem; color: var(--ink-dim); font-family: var(--font-body); }
+
+.countdown-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.countdown-unit{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+}
+.countdown-num{
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.9rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.countdown-unit-label{
+  font-size: 0.68rem;
+  color: var(--ink-mute);
+}
+.countdown-sub{
+  margin-top: 0.5em;
+  font-size: 0.84rem;
+  color: var(--ink-dim);
+}
+.countdown-empty{ color: var(--ink-mute); font-size: 0.88rem; }
+
+@media (max-width: 720px){
+  .hero{ grid-template-columns: 1fr; }
+}
+
+/* ---------- controls: search + filters ---------- */
+.controls{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(var(--bg) 78%, transparent);
+  padding: 1rem 0 1.2rem;
+  margin-bottom: 1.6rem;
+}
+.search-row{
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.search-box{
+  flex: 1 1 260px;
+  position: relative;
+}
+.search-box input{
+  width: 100%;
+  padding-left: 2.5em;
+}
+.search-box svg{
+  position: absolute;
+  left: 0.85em; top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px;
+  stroke: var(--ink-mute);
+}
+.filters{
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.filters select{ min-width: 130px; }
+
+.result-line{
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  color: var(--ink-mute);
+}
+.result-line button{
+  background: none; border: none; color: var(--teal);
+  cursor: pointer; text-decoration: underline; padding: 0; font-size: inherit;
+}
+
+/* ---------- timeline ---------- */
+.timeline{
+  position: relative;
+  padding-left: 2.4rem;
+}
+.timeline::before{
+  content: "";
+  position: absolute;
+  left: 8px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: linear-gradient(var(--line), var(--line) 92%, transparent);
+}
+
+.year-heading{
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--gold);
+  margin: 2.4rem 0 1.1rem;
+  position: relative;
+}
+.year-heading:first-child{ margin-top: 0.4rem; }
+.year-heading::before{
+  content: "";
+  position: absolute;
+  left: -2.4rem;
+  top: 0.4em;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+.entry{
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 1.2rem 1.35rem;
+  margin-bottom: 1rem;
+}
+.entry::before{
+  content: "";
+  position: absolute;
+  left: -2.06rem;
+  top: 1.4rem;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+.entry[data-type="story"]::before{ background: var(--gold); }
+
+.entry-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.entry-date{
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+.entry-title{
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  margin-top: 0.3rem;
+}
+.entry-tags{
+  display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap;
+}
+.entry-body{
+  margin-top: 0.7rem;
+  color: var(--ink-dim);
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+}
+.entry-media-frame{
+  margin-top: 0.9rem;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: #100E22;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 260px;
+  min-height: 100px;
+}
+.entry-media-frame img,
+.entry-media-frame video{
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 60%;
+  max-height: 260px;
+  object-fit: contain;
+}
+
+/* ---------- empty / loading ---------- */
+.state-block{
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--ink-mute);
+}
+.state-block h3{ color: var(--ink-dim); font-size: 1.15rem; margin-bottom: 0.4rem; }
+.state-block p{ font-size: 0.9rem; }
+
+.skeleton{
+  height: 92px;
+  border-radius: var(--radius-m);
+  background: linear-gradient(100deg, var(--surface) 30%, var(--surface-hi) 50%, var(--surface) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  margin-bottom: 1rem;
+}
+@keyframes shimmer{
+  from{ background-position: 200% 0; }
+  to{ background-position: -200% 0; }
+}
+
+footer.site-foot{
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 0.8rem;
+  padding: 2.5rem 0 1rem;
+}
+footer.site-foot a{ color: var(--teal); text-decoration: none; }

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · bhyon's memorys</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- ---------------- LOGIN ---------------- -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h1>Masuk ke vault</h1>
+    <div class="sub">Dashboard ini hanya untuk pemilik vault.</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Kata sandi</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">Masuk</button>
+    </form>
+
+    <div class="login-hint">
+      Akun login dibuat lewat Supabase Auth (Authentication → Users), bukan lewat halaman ini.
+      Setelah dibuatkan akun, masuk memakai email &amp; kata sandi tersebut.
+    </div>
+  </div>
+</div>
+
+<!-- ---------------- DASHBOARD APP ---------------- -->
+<div class="dash" id="dashApp">
+
+  <aside class="side">
+    <div class="side-brand">bhyon's memorys<small>dashboard</small></div>
+
+    <button class="side-link active" data-panel="panelEntries">Memories &amp; stories</button>
+    <button class="side-link" data-panel="panelBirthday">Pengaturan ulang tahun</button>
+
+    <div class="side-spacer"></div>
+    <a href="index.html" class="side-link" style="text-decoration:none;">Lihat vault publik</a>
+    <button class="side-signout" id="signOutBtn">Keluar</button>
+  </aside>
+
+  <main class="main">
+
+    <!-- ===== PANEL: entries ===== -->
+    <section class="panel active" id="panelEntries">
+      <div class="panel-head">
+        <div>
+          <h1>Memories &amp; stories</h1>
+          <p>Semua kenangan yang tersimpan di vault.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-teal" id="addMemoryBtn">+ Tambah memory</button>
+          <button class="btn btn-primary" id="addStoryBtn">+ Tambah story</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="dashSearch" placeholder="Cari judul, isi, atau kategori…">
+        <select id="dashFilterYear"><option value="">Semua tahun</option></select>
+        <select id="dashFilterCategory"><option value="">Semua kategori</option></select>
+        <select id="dashFilterType">
+          <option value="">Semua jenis</option>
+          <option value="memory">Memory</option>
+          <option value="story">Story</option>
+        </select>
+      </div>
+
+      <div class="rows" id="rows">
+        <div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- ===== PANEL: birthday settings ===== -->
+    <section class="panel" id="panelBirthday">
+      <div class="panel-head">
+        <div>
+          <h1>Pengaturan ulang tahun</h1>
+          <p>Dipakai untuk hitung mundur di halaman vault publik.</p>
+        </div>
+      </div>
+
+      <form class="settings-card" id="birthdayForm">
+        <div class="field">
+          <label for="ownerName">Nama pemilik</label>
+          <input type="text" id="ownerName" placeholder="Bhyon" required>
+        </div>
+        <div class="field">
+          <label for="birthdayDate">Tanggal lahir</label>
+          <input type="date" id="birthdayDate" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan pengaturan</button>
+        <div class="settings-preview" id="birthdayPreview"></div>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- ---------------- ADD / EDIT MODAL ---------------- -->
+<div class="modal-backdrop" id="entryModalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Tambah memory</h2>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Tutup">&times;</button>
+    </div>
+
+    <form id="entryForm">
+      <input type="hidden" id="entryId">
+      <input type="hidden" id="entryType" value="memory">
+
+      <div class="field">
+        <label for="entryTitle">Judul</label>
+        <input type="text" id="entryTitle" required placeholder="Contoh: Perjalanan ke Jember">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="entryDate">Tanggal kenangan</label>
+          <input type="date" id="entryDate" required>
+        </div>
+        <div class="field">
+          <label for="entryCategory">Kategori</label>
+          <input type="text" id="entryCategory" placeholder="Contoh: Liburan, Keluarga, Sekolah">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="entryContent" id="entryContentLabel">Isi cerita</label>
+        <textarea id="entryContent" placeholder="Tulis kenangannya di sini…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="entryMediaFile">Foto atau video (opsional)</label>
+        <input type="file" id="entryMediaFile" accept=".png,.jpg,.jpeg,.mp4,image/png,image/jpeg,video/mp4">
+        <div class="field-hint">PNG, JPG, atau MP4 · maksimal 20MB.</div>
+        <div class="media-preview" id="mediaPreview"></div>
+        <div class="media-preview-actions" id="mediaPreviewActions">
+          <button type="button" class="btn btn-ghost btn-sm" id="removeMediaBtn">Hapus media ini</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancelEntryBtn">Batal</button>
+        <button type="submit" class="btn btn-primary" id="saveEntryBtn">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ---------------- DELETE CONFIRM MODAL ---------------- -->
+<div class="modal-backdrop" id="deleteModalBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h2>Hapus kenangan ini?</h2>
+      <button class="modal-close" id="deleteModalCloseBtn" aria-label="Tutup">&times;</button>
+    </div>
+    <p style="color:var(--ink-dim); font-size:0.92rem;">Tindakan ini tidak bisa dibatalkan setelah disimpan.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="deleteCancelBtn">Batal</button>
+      <button type="button" class="btn btn-danger" id="deleteConfirmBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

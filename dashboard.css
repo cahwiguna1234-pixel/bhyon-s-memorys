@@ -1,0 +1,204 @@
+/* ============================================================
+   bhyon's memorys — dashboard
+   ============================================================ */
+
+/* ---------- login screen ---------- */
+.login-screen{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative; z-index: 1;
+}
+.login-card{
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 2.2rem;
+  box-shadow: var(--shadow-card);
+}
+.login-card h1{
+  font-size: 1.6rem;
+  font-style: italic;
+  margin-bottom: 0.3rem;
+}
+.login-card .sub{
+  color: var(--ink-mute);
+  font-size: 0.86rem;
+  margin-bottom: 1.6rem;
+}
+.login-error{
+  color: var(--danger);
+  font-size: 0.82rem;
+  margin-top: -0.4rem;
+  margin-bottom: 1rem;
+  min-height: 1em;
+}
+.login-card .btn{ width: 100%; justify-content: center; margin-top: 0.4rem; }
+.login-hint{
+  margin-top: 1.4rem;
+  font-size: 0.76rem;
+  color: var(--ink-mute);
+  line-height: 1.6;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+/* ---------- app shell ---------- */
+.dash{
+  display: none;
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  grid-template-columns: 230px 1fr;
+}
+.dash.open{ display: grid; }
+
+.side{
+  border-right: 1px solid var(--line);
+  padding: 1.6rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.side-brand{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  margin-bottom: 1.6rem;
+  padding: 0 0.4rem;
+}
+.side-brand small{
+  display: block;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  margin-top: 0.2rem;
+}
+.side-link{
+  display: flex; align-items: center; gap: 0.6em;
+  padding: 0.65em 0.7em;
+  border-radius: var(--radius-s);
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+  text-align: left;
+  width: 100%;
+}
+.side-link:hover{ background: var(--surface); }
+.side-link.active{ background: var(--surface); border-color: var(--line); color: var(--ink); }
+.side-spacer{ flex: 1; }
+.side-signout{
+  font-size: 0.82rem;
+  color: var(--ink-mute);
+  background: none; border: 1px solid var(--line); border-radius: var(--radius-s);
+  padding: 0.55em 0.7em; cursor: pointer;
+}
+.side-signout:hover{ color: var(--ink); border-color: var(--ink-mute); }
+
+.main{
+  padding: 1.8rem 2.2rem 4rem;
+  max-width: 980px;
+}
+.panel{ display: none; }
+.panel.active{ display: block; }
+
+.panel-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.panel-head h1{ font-size: 1.7rem; font-style: italic; }
+.panel-head p{ color: var(--ink-mute); font-size: 0.86rem; margin-top: 0.3rem; }
+.panel-actions{ display: flex; gap: 0.6rem; }
+
+/* toolbar: search + filter inside dashboard list */
+.toolbar{
+  display: flex; gap: 0.7rem; flex-wrap: wrap;
+  margin-bottom: 1.3rem;
+}
+.toolbar input[type="text"]{ flex: 1 1 220px; }
+.toolbar select{ min-width: 120px; }
+
+/* entries table-ish list */
+.rows{ display: flex; flex-direction: column; gap: 0.6rem; }
+.row{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 1rem 1.2rem;
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+.row-date{
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  line-height: 1.4;
+}
+.row-main{ min-width: 0; }
+.row-title{
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-meta{
+  display: flex; gap: 0.5rem; margin-top: 0.4rem; flex-wrap: wrap; align-items: center;
+}
+.row-excerpt{
+  margin-top: 0.4rem;
+  font-size: 0.84rem;
+  color: var(--ink-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-actions{ display: flex; gap: 0.5rem; }
+
+@media (max-width: 640px){
+  .row{ grid-template-columns: 1fr; }
+  .row-actions{ justify-content: flex-start; }
+}
+
+/* birthday settings panel */
+.settings-card{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 1.8rem;
+  max-width: 460px;
+}
+.settings-preview{
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.86rem;
+  color: var(--ink-dim);
+}
+.settings-preview strong{ color: var(--gold); }
+
+@media (max-width: 860px){
+  .dash{ grid-template-columns: 1fr; }
+  .side{
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0.9rem 1rem;
+  }
+  .side-brand{ margin: 0 1rem 0 0; }
+  .side-spacer{ display: none; }
+  .main{ padding: 1.4rem 1.2rem 3rem; }
+}
