@@ -47,6 +47,7 @@
     <div class="side-brand">bhyon's memorys<small>dashboard</small></div>
 
     <button class="side-link active" data-panel="panelEntries">Memories &amp; stories</button>
+    <button class="side-link" data-panel="panelMessages">Pesan masuk<span class="side-badge" id="msgBadge" style="display:none;"></span></button>
     <button class="side-link" data-panel="panelBirthday">Pengaturan ulang tahun</button>
 
     <div class="side-spacer"></div>
@@ -81,6 +82,20 @@
       </div>
 
       <div class="rows" id="rows">
+        <div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- ===== PANEL: anonymous messages ===== -->
+    <section class="panel" id="panelMessages">
+      <div class="panel-head">
+        <div>
+          <h1>Pesan masuk</h1>
+          <p id="msgPanelSub">Pesan anonim yang dikirim orang lewat halaman vault publik.</p>
+        </div>
+      </div>
+
+      <div class="rows" id="msgRows">
         <div class="skeleton"></div>
       </div>
     </section>
@@ -159,6 +174,43 @@
         <button type="submit" class="btn btn-primary" id="saveEntryBtn">Simpan</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ---------------- MESSAGE DELETE CONFIRM MODAL ---------------- -->
+<div class="modal-backdrop" id="msgDeleteModalBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h2>Hapus pesan ini?</h2>
+      <button class="modal-close" id="msgDeleteModalCloseBtn" aria-label="Tutup">&times;</button>
+    </div>
+    <p style="color:var(--ink-dim); font-size:0.92rem;">Tindakan ini tidak bisa dibatalkan.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="msgDeleteCancelBtn">Batal</button>
+      <button type="button" class="btn btn-danger" id="msgDeleteConfirmBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------------- STORY IMAGE MODAL ---------------- -->
+<div class="modal-backdrop" id="storyModalBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h2>Buat gambar story</h2>
+      <button class="modal-close" id="storyModalCloseBtn" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="story-preview-wrap">
+      <canvas id="storyCanvas" width="1080" height="1920"></canvas>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="storyDownloadBtn">Unduh gambar</button>
+      <button type="button" class="btn btn-primary" id="storyShareBtn">Bagikan ke Instagram Story</button>
+    </div>
+    <p style="color:var(--ink-mute); font-size:0.78rem; margin-top:0.8rem; line-height:1.5;">
+      Tombol "Bagikan" pakai share sheet HP kamu — pilih Instagram, lalu pilih Story.
+      Kalau tombol itu tidak muncul/tidak berfungsi (biasanya di desktop), unduh gambarnya
+      dan upload manual ke Instagram Story.
+    </p>
   </div>
 </div>
 
