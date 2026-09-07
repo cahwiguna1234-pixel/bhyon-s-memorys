@@ -63,6 +63,21 @@ const el = {
   ownerName: document.getElementById("ownerName"),
   birthdayDate: document.getElementById("birthdayDate"),
   birthdayPreview: document.getElementById("birthdayPreview"),
+
+  msgBadge: document.getElementById("msgBadge"),
+  msgPanelSub: document.getElementById("msgPanelSub"),
+  msgRows: document.getElementById("msgRows"),
+
+  msgDeleteModalBackdrop: document.getElementById("msgDeleteModalBackdrop"),
+  msgDeleteModalCloseBtn: document.getElementById("msgDeleteModalCloseBtn"),
+  msgDeleteCancelBtn: document.getElementById("msgDeleteCancelBtn"),
+  msgDeleteConfirmBtn: document.getElementById("msgDeleteConfirmBtn"),
+
+  storyModalBackdrop: document.getElementById("storyModalBackdrop"),
+  storyModalCloseBtn: document.getElementById("storyModalCloseBtn"),
+  storyCanvas: document.getElementById("storyCanvas"),
+  storyDownloadBtn: document.getElementById("storyDownloadBtn"),
+  storyShareBtn: document.getElementById("storyShareBtn"),
 };
 
 /* ================= AUTH ================= */
@@ -114,6 +129,7 @@ function bootDashboard(){
   dashboardBooted = true;
   loadEntries();
   loadBirthdaySettings();
+  loadMessages();
 }
 
 /* ================= SIDEBAR NAV ================= */
@@ -532,6 +548,243 @@ function updateBirthdayPreview(name, birthday){
     ${countdownLine}
     <br><span style="color:var(--ink-mute); font-size:0.82em;">Tanggal lahir tersimpan: ${dateLabel} · ini juga yang tampil di hitung mundur halaman publik.</span>`;
 }
+
+/* ================= ANONYMOUS MESSAGES ================= */
+
+let allMessages = [];
+let pendingDeleteMsgId = null;
+let activeStoryMessage = null;
+
+async function loadMessages(){
+  const { data, error } = await db
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error){
+    // Table might not exist yet if the SQL setup hasn't been run — fail quietly on the panel.
+    el.msgRows.innerHTML = `
+      <div class="state-block">
+        <h3>Belum bisa memuat pesan</h3>
+        <p>${escapeHtml(error.message)}</p>
+      </div>`;
+    return;
+  }
+  allMessages = data || [];
+  renderMessageRows();
+  updateMsgBadge();
+}
+
+function updateMsgBadge(){
+  const count = allMessages.length;
+  if (!count){
+    el.msgBadge.style.display = "none";
+    el.msgPanelSub.textContent = "Pesan anonim yang dikirim orang lewat halaman vault publik.";
+    return;
+  }
+  el.msgBadge.style.display = "";
+  el.msgBadge.textContent = count > 99 ? "99+" : String(count);
+  el.msgPanelSub.textContent = `${count} pesan tersimpan.`;
+}
+
+function renderMessageRows(){
+  if (!allMessages.length){
+    el.msgRows.innerHTML = `
+      <div class="state-block">
+        <h3>Belum ada pesan</h3>
+        <p>Bagikan link vault ini supaya orang bisa kirim pesan anonim ke kamu.</p>
+      </div>`;
+    return;
+  }
+
+  el.msgRows.innerHTML = allMessages.map(m => {
+    const d = new Date(m.created_at);
+    const dateLabel = `${d.getDate()} ${MONTHS_ID[d.getMonth()].slice(0,3)} ${d.getFullYear()}, ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    return `
+      <div class="msg-row" data-id="${m.id}">
+        <div class="msg-row-top">
+          <div class="msg-row-date">${dateLabel}</div>
+        </div>
+        <div class="msg-row-text">${escapeHtml(m.content)}</div>
+        <div class="msg-row-actions">
+          <button class="btn btn-teal btn-sm" data-action="story" data-id="${m.id}">Buat story</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" data-id="${m.id}">Hapus</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+el.msgRows.addEventListener("click", (ev) => {
+  const btn = ev.target.closest("button[data-action]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const message = allMessages.find(x => x.id === id);
+  if (!message) return;
+
+  if (btn.dataset.action === "delete") openMsgDeleteModal(id);
+  if (btn.dataset.action === "story") openStoryModal(message);
+});
+
+/* ---- delete ---- */
+
+function openMsgDeleteModal(id){
+  pendingDeleteMsgId = id;
+  openModal(el.msgDeleteModalBackdrop);
+}
+el.msgDeleteCancelBtn.addEventListener("click", () => { pendingDeleteMsgId = null; closeModal(el.msgDeleteModalBackdrop); });
+el.msgDeleteModalCloseBtn.addEventListener("click", () => { pendingDeleteMsgId = null; closeModal(el.msgDeleteModalBackdrop); });
+el.msgDeleteModalBackdrop.addEventListener("click", (ev) => {
+  if (ev.target === el.msgDeleteModalBackdrop){ pendingDeleteMsgId = null; closeModal(el.msgDeleteModalBackdrop); }
+});
+
+el.msgDeleteConfirmBtn.addEventListener("click", async () => {
+  if (!pendingDeleteMsgId) return;
+
+  el.msgDeleteConfirmBtn.disabled = true;
+  el.msgDeleteConfirmBtn.textContent = "Menghapus…";
+
+  const { error } = await db.from("messages").delete().eq("id", pendingDeleteMsgId);
+
+  el.msgDeleteConfirmBtn.disabled = false;
+  el.msgDeleteConfirmBtn.textContent = "Hapus";
+
+  if (error){
+    showToast(error.message, true);
+    return;
+  }
+  showToast("Pesan dihapus.");
+  pendingDeleteMsgId = null;
+  closeModal(el.msgDeleteModalBackdrop);
+  await loadMessages();
+});
+
+/* ---- story image generator ---- */
+
+function cssVar(name, fallback){
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
+function wrapCanvasText(ctx, text, maxWidth){
+  const paragraphs = text.split("\n");
+  const lines = [];
+  paragraphs.forEach(par => {
+    const words = par.split(" ");
+    let line = "";
+    words.forEach(word => {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    lines.push(line);
+  });
+  return lines;
+}
+
+async function drawStoryCanvas(message){
+  const canvas = el.storyCanvas;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+  const bg = cssVar("--surface", "#f6f1e7");
+  const line = cssVar("--line", "#e3dbca");
+  const ink = cssVar("--ink", "#211c14");
+  const inkMute = cssVar("--ink-mute", "#8b8271");
+  const gold = cssVar("--gold", "#b8862f");
+
+  // background
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = line;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(40, 40, W - 80, H - 80);
+
+  // eyebrow label
+  ctx.fillStyle = gold;
+  ctx.font = "600 32px 'IBM Plex Sans', sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("PESAN ANONIM", W / 2, 260);
+
+  // quote mark
+  ctx.fillStyle = gold;
+  ctx.font = "italic 160px 'Fraunces', serif";
+  ctx.fillText("“", W / 2, 420);
+
+  // message body, auto-sized to fit
+  const maxWidth = W - 180;
+  let fontSize = 76;
+  let lines = [];
+  ctx.textAlign = "center";
+  do {
+    ctx.font = `italic 500 ${fontSize}px 'Fraunces', serif`;
+    lines = wrapCanvasText(ctx, message.content, maxWidth);
+    if (lines.length * (fontSize * 1.3) < H - 900) break;
+    fontSize -= 4;
+  } while (fontSize > 34);
+
+  ctx.fillStyle = ink;
+  const lineHeight = fontSize * 1.32;
+  const startY = H / 2 - ((lines.length - 1) * lineHeight) / 2;
+  lines.forEach((ln, i) => {
+    ctx.fillText(ln, W / 2, startY + i * lineHeight);
+  });
+
+  // footer branding
+  ctx.fillStyle = ink;
+  ctx.font = "italic 44px 'Fraunces', serif";
+  ctx.fillText("bhyon's memorys", W / 2, H - 200);
+
+  ctx.fillStyle = inkMute;
+  ctx.font = "400 30px 'IBM Plex Sans', sans-serif";
+  ctx.fillText("kirim pesanmu juga → link di bio", W / 2, H - 145);
+}
+
+function openStoryModal(message){
+  activeStoryMessage = message;
+  openModal(el.storyModalBackdrop);
+  drawStoryCanvas(message);
+}
+el.storyModalCloseBtn.addEventListener("click", () => closeModal(el.storyModalBackdrop));
+el.storyModalBackdrop.addEventListener("click", (ev) => {
+  if (ev.target === el.storyModalBackdrop) closeModal(el.storyModalBackdrop);
+});
+
+function canvasToBlob(canvas){
+  return new Promise(resolve => canvas.toBlob(resolve, "image/png", 1));
+}
+
+el.storyDownloadBtn.addEventListener("click", async () => {
+  const blob = await canvasToBlob(el.storyCanvas);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `pesan-story-${activeStoryMessage ? activeStoryMessage.id.slice(0,8) : Date.now()}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+el.storyShareBtn.addEventListener("click", async () => {
+  const blob = await canvasToBlob(el.storyCanvas);
+  const file = new File([blob], "pesan-story.png", { type: "image/png" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })){
+    try{
+      await navigator.share({ files: [file], title: "Pesan anonim" });
+    } catch (err){
+      // user cancelled the share sheet — no need to show an error
+    }
+  } else {
+    showToast("Berbagi langsung tidak didukung di perangkat ini — unduh gambarnya lalu upload manual.", true);
+  }
+});
 
 /* ================= MODAL HELPERS ================= */
 
