@@ -17,7 +17,10 @@
 
 <div class="topbar wrap" style="padding-left:0;padding-right:0;">
   <div class="brand"><a href="index.html">bhyon's memorys</a></div>
-  <a href="dashboard.html" class="btn btn-ghost btn-sm">Kelola vault</a>
+  <div style="display:flex; gap:0.5rem;">
+    <button class="btn btn-primary btn-sm" id="openMsgBtn">Kirim pesan anonim</button>
+    <a href="dashboard.html" class="btn btn-ghost btn-sm">Kelola vault</a>
+  </div>
 </div>
 
 <main class="wrap">
@@ -74,10 +77,45 @@
 
 </main>
 
+<!-- ---------------- ANONYMOUS MESSAGE MODAL ---------------- -->
+<div class="modal-backdrop" id="msgModalBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h2 id="msgModalTitle">Kirim pesan anonim</h2>
+      <button class="modal-close" id="msgModalCloseBtn" aria-label="Tutup">&times;</button>
+    </div>
+
+    <div id="msgFormWrap">
+      <p style="color:var(--ink-mute); font-size:0.84rem; margin-top:-0.4rem; margin-bottom:1.1rem; line-height:1.5;">
+        Pesan ini terkirim tanpa nama pengirim — Bhyon nggak akan tahu ini dari siapa.
+      </p>
+      <form id="msgForm">
+        <div class="field">
+          <label for="msgContent">Pesanmu</label>
+          <textarea id="msgContent" maxlength="500" required placeholder="Tulis apa aja, bebas…"></textarea>
+          <div class="field-hint" id="msgCount">0 / 500</div>
+        </div>
+        <div class="login-error" id="msgError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="msgCancelBtn">Batal</button>
+          <button type="submit" class="btn btn-primary" id="msgSendBtn">Kirim</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="msgSentWrap" style="display:none; text-align:center; padding:1rem 0;">
+      <p style="font-family:var(--font-display); font-style:italic; font-size:1.2rem; margin-bottom:0.4rem;">Terkirim ✓</p>
+      <p style="color:var(--ink-mute); font-size:0.86rem; margin-bottom:1.4rem;">Pesanmu udah nyampe ke vault, anonim.</p>
+      <button type="button" class="btn btn-primary" id="msgCloseAfterSendBtn" style="width:100%; justify-content:center;">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
+<script src="message-public.js"></script>
 </body>
 </html>
