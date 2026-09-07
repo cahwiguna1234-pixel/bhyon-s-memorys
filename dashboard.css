@@ -171,6 +171,69 @@
   .row-actions{ justify-content: flex-start; }
 }
 
+/* sidebar unread badge */
+.side-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3em;
+  height: 1.3em;
+  padding: 0 0.35em;
+  margin-left: 0.4em;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* message rows (reuses .rows / .row from entries, tweaked) */
+.msg-row{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.msg-row-top{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.msg-row-date{
+  font-size: 0.76rem;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+.msg-row-text{
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg-row-actions{ display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* story image preview modal */
+.story-preview-wrap{
+  width: 100%;
+  max-height: 60vh;
+  overflow: hidden;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line);
+  display: flex;
+  justify-content: center;
+  background: var(--line);
+}
+.story-preview-wrap canvas{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* birthday settings panel */
 .settings-card{
   background: var(--surface);
