@@ -685,6 +685,18 @@ function wrapCanvasText(ctx, text, maxWidth){
   return lines;
 }
 
+// draws a rounded-rect path (used for the popup card, the label chip, and the CTA pill)
+function roundRectPath(ctx, x, y, w, h, r){
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
 async function drawStoryCanvas(message){
   const canvas = el.storyCanvas;
   const ctx = canvas.getContext("2d");
@@ -692,57 +704,138 @@ async function drawStoryCanvas(message){
 
   if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
-  const bg = cssVar("--surface", "#f6f1e7");
-  const line = cssVar("--line", "#e3dbca");
-  const ink = cssVar("--ink", "#211c14");
-  const inkMute = cssVar("--ink-mute", "#8b8271");
-  const gold = cssVar("--gold", "#b8862f");
+  const gold = cssVar("--gold", "#E8B54D");
+  const goldDim = cssVar("--gold-dim", "#7A5F2B");
+  const teal = cssVar("--teal", "#6FB3AC");
+  const tealDim = cssVar("--teal-dim", "#2E4E4A");
+  const bgDeep = cssVar("--bg", "#171529");
+  const cardBg = cssVar("--ink", "#F1ECE2");
+  const cardInk = cssVar("--bg", "#171529");
 
-  // background
-  ctx.fillStyle = bg;
+  // ---------------------------------------------------------------
+  // 1) full-bleed background — a colorful gradient behind everything,
+  //    exactly like the backdrop an NGL story sits on.
+  // ---------------------------------------------------------------
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, goldDim);
+  bgGrad.addColorStop(0.5, bgDeep);
+  bgGrad.addColorStop(1, tealDim);
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = line;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(40, 40, W - 80, H - 80);
 
-  // eyebrow label
+  const glow1 = ctx.createRadialGradient(W * 0.15, H * 0.1, 0, W * 0.15, H * 0.1, 520);
+  glow1.addColorStop(0, "rgba(232,181,77,0.35)");
+  glow1.addColorStop(1, "rgba(232,181,77,0)");
+  ctx.fillStyle = glow1;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow2 = ctx.createRadialGradient(W * 0.9, H * 0.85, 0, W * 0.9, H * 0.85, 560);
+  glow2.addColorStop(0, "rgba(111,179,172,0.30)");
+  glow2.addColorStop(1, "rgba(111,179,172,0)");
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0, 0, W, H);
+
+  // ---------------------------------------------------------------
+  // 2) fit the message text to a maximum width/height, same
+  //    shrink-to-fit approach as before, just scoped to the card.
+  // ---------------------------------------------------------------
+  const cardX = 90;
+  const cardW = W - cardX * 2;
+  const textPadX = 80;
+  const maxTextWidth = cardW - textPadX * 2;
+
+  let fontSize = 62;
+  let lines = [];
+  do {
+    ctx.font = `500 ${fontSize}px 'Fraunces', serif`;
+    lines = wrapCanvasText(ctx, message.content, maxTextWidth);
+    const blockH = lines.length * (fontSize * 1.34);
+    if (blockH < 980) break;
+    fontSize -= 3;
+  } while (fontSize > 32);
+
+  const lineHeight = fontSize * 1.34;
+  const textBlockHeight = lines.length * lineHeight;
+
+  const padTop = 190;   // room for the label chip that overlaps the card's top edge
+  const padBottom = 90;
+  const cardH = Math.min(padTop + textBlockHeight + padBottom, H - 420);
+
+  let cardY = (H - cardH) / 2 - 40;
+  cardY = Math.max(cardY, 300);
+
+  // ---------------------------------------------------------------
+  // 3) the popup card itself — a light, rounded, floating panel
+  //    with a soft drop shadow, like a message bubble laid over
+  //    the story background.
+  // ---------------------------------------------------------------
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.45)";
+  ctx.shadowBlur = 60;
+  ctx.shadowOffsetY = 30;
+  ctx.fillStyle = cardBg;
+  roundRectPath(ctx, cardX, cardY, cardW, cardH, 44);
+  ctx.fill();
+  ctx.restore();
+
+  // label chip, sitting half on / half off the card's top edge
+  const chipW = 360, chipH = 84;
+  const chipX = W / 2 - chipW / 2;
+  const chipY = cardY - chipH / 2;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetY = 8;
   ctx.fillStyle = gold;
+  roundRectPath(ctx, chipX, chipY, chipW, chipH, chipH / 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "#23180A";
   ctx.font = "600 32px 'IBM Plex Sans', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("PESAN ANONIM", W / 2, 260);
+  ctx.textBaseline = "middle";
+  ctx.fillText("💌 PESAN ANONIM", W / 2, chipY + chipH / 2 + 2);
+  ctx.textBaseline = "alphabetic";
 
-  // quote mark
-  ctx.fillStyle = gold;
-  ctx.font = "italic 160px 'Fraunces', serif";
-  ctx.fillText("“", W / 2, 420);
-
-  // message body, auto-sized to fit
-  const maxWidth = W - 180;
-  let fontSize = 76;
-  let lines = [];
+  // message text, centered inside the card
+  ctx.fillStyle = cardInk;
+  ctx.font = `500 ${fontSize}px 'Fraunces', serif`;
   ctx.textAlign = "center";
-  do {
-    ctx.font = `italic 500 ${fontSize}px 'Fraunces', serif`;
-    lines = wrapCanvasText(ctx, message.content, maxWidth);
-    if (lines.length * (fontSize * 1.3) < H - 900) break;
-    fontSize -= 4;
-  } while (fontSize > 34);
-
-  ctx.fillStyle = ink;
-  const lineHeight = fontSize * 1.32;
-  const startY = H / 2 - ((lines.length - 1) * lineHeight) / 2;
+  const textStartY = cardY + padTop - 20 + lineHeight * 0.7;
   lines.forEach((ln, i) => {
-    ctx.fillText(ln, W / 2, startY + i * lineHeight);
+    ctx.fillText(ln, W / 2, textStartY + i * lineHeight);
   });
 
-  // footer branding
-  ctx.fillStyle = ink;
-  ctx.font = "italic 44px 'Fraunces', serif";
-  ctx.fillText("bhyon's memorys", W / 2, H - 200);
+  // ---------------------------------------------------------------
+  // 4) a floating CTA pill below the card, like NGL's reply button
+  // ---------------------------------------------------------------
+  const btnW = 620, btnH = 108;
+  const btnX = W / 2 - btnW / 2;
+  let btnY = cardY + cardH + 70;
+  if (btnY + btnH > H - 160) btnY = H - 160 - btnH;
 
-  ctx.fillStyle = inkMute;
-  ctx.font = "400 30px 'IBM Plex Sans', sans-serif";
-  ctx.fillText("kirim pesanmu juga → link di bio", W / 2, H - 145);
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 10;
+  ctx.fillStyle = teal;
+  roundRectPath(ctx, btnX, btnY, btnW, btnH, btnH / 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "#0E2422";
+  ctx.font = "600 36px 'IBM Plex Sans', sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Kirim pesanmu juga →", W / 2, btnY + btnH / 2 + 2);
+  ctx.textBaseline = "alphabetic";
+
+  // brand watermark at the very bottom
+  ctx.fillStyle = "rgba(241,236,226,0.85)";
+  ctx.font = "italic 40px 'Fraunces', serif";
+  ctx.textAlign = "center";
+  ctx.fillText("bhyon's memorys", W / 2, H - 70);
 }
 
 function openStoryModal(message){
